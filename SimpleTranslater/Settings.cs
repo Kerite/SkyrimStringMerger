@@ -21,13 +21,6 @@ public class Settings
     [SynthesisTooltip(@"Referenced mod that translated name comes from (Only available while whitelist mode)")]
     public List<ModKey> WhiteList = new()
     {
-        ModKey.FromFileName("Skyrim.esm"),
-        ModKey.FromFileName("Update.esm"),
-        ModKey.FromFileName("Dawnguard.esm"),
-        ModKey.FromFileName("HearthFires.esm"),
-        ModKey.FromFileName("Dragonborn.esm"),
-        ModKey.FromFileName("Unofficial Skyrim Special Edition Patch.esp"),
-        ModKey.FromFileName("ccBGSSSE001-Fish.esm")
     };
     [SynthesisTooltip(@"Referenced Mod That Will Skipped (Available while blacklist mode0")]
     public List<ModKey> BlackList = new();
@@ -35,8 +28,6 @@ public class Settings
     public bool IgnorePatchMods = true;
     public List<ModKey> IncludedPatchMods = new List<ModKey>()
     {
-        ModKey.FromFileName("Unofficial Skyrim Special Edition Patch.esp"),
-        ModKey.FromFileName("Unofficial Skyrim Modders Patch.esp")
     };
 
     public bool Weapon = true;
