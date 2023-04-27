@@ -12,7 +12,12 @@ namespace SimpleTranslator;
 public record Settings
 {
     [SynthesisTooltip(@"")]
-    public bool ResolveFromOrigin = false;
+    public bool ResolveFromOrigin = true;
+
+    [SynthesisTooltip(@"If true, entities that not changed will not included by this patch")]
+    public bool SkipNoTranslated = true;
+
+    public string LogPath = "";
 
     [SynthesisTooltip(@"If true, all entities will be translated. If false, only entities patched by synthesis will be translated")]
     public bool PatchAllEntity = false;
@@ -43,8 +48,6 @@ public record Settings
 
     public Dictionary<string, string> CustomDictionary = new()
     {
-        { "Horse", "马" },
-        { "Skull", "头骨" },
-        { "Blackreach", "黑境" }
+        { "Horse - !JUST AN EXAMPLE!", "马" },
     };
 }
