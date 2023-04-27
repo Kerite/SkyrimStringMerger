@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SimpleTranslator;
 
-public class Settings
+public record Settings
 {
     [SynthesisTooltip(@"")]
     public bool ResolveFromOrigin = false;
