@@ -6,39 +6,40 @@ namespace SynStringMerger;
 
 public record Settings
 {
-    [SynthesisSettingName("High Priority Mods (Down Overrides Up)")]
+    public Dictionary<string, string> CustomDictionary = new();
+
+    [SynthesisSettingName("High Priority Mods")]
     [SynthesisTooltip("Usually same with your plugin load order in mod organizer")]
-    public List<ModKey> HighPriorityMods = new List<ModKey>()
+    public List<ModKey> HighPriorityMods = new()
     {
+        ModKey.FromFileName("Unofficial Skyrim Special Edition Patch.esp"),
+        ModKey.FromFileName("Vokrii - Minimalistic Perks of Skyrim.esp"),
+        ModKey.FromFileName("Odin - Skyrim Magic Overhaul.esp"),
+        ModKey.FromFileName("Odin - Vokrii Compatibility Patch.esp"),
     };
 
-    [SynthesisTooltip(@"")]
+    [SynthesisTooltip(@"Has no effect for High Priority Mods")]
     public bool ResolveFromOrigin = true;
 
     [SynthesisTooltip(@"If true, entities that not changed will not included by this patch")]
     public bool SkipSameString = true;
 
-    [SynthesisTooltip(@"Don't Skip Names That All Characters Are English ")]
-    public bool DontSkipAllEnglish = false;
+    [SynthesisTooltip(@"Skip Names That All Characters Are English ")]
+    public bool SkipEnglishString = true;
 
     public string LogPath = "";
 
     [SynthesisTooltip(@"If true, all entities will be translated. If false, only entities patched by synthesis will be translated")]
-    public bool PatchAllEntity = false;
+    public bool PatchAllRecords = false;
 
     public bool WhiteListMode = false;
     [SynthesisTooltip(@"Referenced mod that translated name comes from (Only available while whitelist mode)")]
-    public List<ModKey> WhiteList = new()
-    {
-    };
+    public List<ModKey> WhiteList = new();
     [SynthesisTooltip(@"Referenced Mod That Will Skipped (Available while blacklist mode0")]
-    public List<ModKey> BlackList = new()
-    {
-
-    };
+    public List<ModKey> BlackList = new();
 
     public bool IgnorePatchMods = true;
-    public List<ModKey> IncludedPatchMods = new ()
+    public List<ModKey> IncludedPatchMods = new()
     {
     };
 
@@ -53,9 +54,4 @@ public record Settings
     public bool Books = true;
 
     public bool Verbose = true;
-
-    public Dictionary<string, string> CustomDictionary = new()
-    {
-        { "Horse - !JUST AN EXAMPLE!", "马" },
-    };
 }

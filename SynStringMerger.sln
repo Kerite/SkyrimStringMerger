@@ -4,6 +4,16 @@ VisualStudioVersion = 17.5.33414.496
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynStringMerger", "SynStringMerger\SynStringMerger.csproj", "{8BA2E1B7-DD65-42B6-A780-17E4037A3C1B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AFFFF736-F93C-4119-ABEF-4D336498D211}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{F20742E4-025F-468E-96EB-3D4867F99AFF}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\ResolveFromOriginNotice.png = Assets\ResolveFromOriginNotice.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,5 +27,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F20742E4-025F-468E-96EB-3D4867F99AFF} = {AFFFF736-F93C-4119-ABEF-4D336498D211}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0CA31A25-7D30-4E98-8CCE-8230FF03259F}
 	EndGlobalSection
 EndGlobal
