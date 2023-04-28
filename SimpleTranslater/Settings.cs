@@ -11,11 +11,20 @@ namespace SimpleTranslator;
 
 public record Settings
 {
+    [SynthesisSettingName("High Priority Mods (Down Overrides Up)")]
+    [SynthesisTooltip("Usually same with your plugin load order in mod organizer")]
+    public List<ModKey> HighPriorityMods = new List<ModKey>()
+    {
+    };
+
     [SynthesisTooltip(@"")]
     public bool ResolveFromOrigin = true;
 
     [SynthesisTooltip(@"If true, entities that not changed will not included by this patch")]
     public bool SkipNoTranslated = true;
+
+    [SynthesisTooltip(@"Don't Skip Names That All Characters Are English ")]
+    public bool DontSkipAllEnglish = false;
 
     public string LogPath = "";
 
@@ -28,10 +37,13 @@ public record Settings
     {
     };
     [SynthesisTooltip(@"Referenced Mod That Will Skipped (Available while blacklist mode0")]
-    public List<ModKey> BlackList = new();
+    public List<ModKey> BlackList = new()
+    {
+
+    };
 
     public bool IgnorePatchMods = true;
-    public List<ModKey> IncludedPatchMods = new List<ModKey>()
+    public List<ModKey> IncludedPatchMods = new ()
     {
     };
 
@@ -43,6 +55,7 @@ public record Settings
     public bool Quest = true;
     public bool Container = true;
     public bool Item = true;
+    public bool Books = true;
 
     public bool Verbose = true;
 

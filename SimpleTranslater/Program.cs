@@ -11,6 +11,7 @@ using Mutagen.Bethesda.Plugins.Aspects;
 using Mutagen.Bethesda.Plugins.Binary.Translations;
 using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
 using Mutagen.Bethesda.Plugins.Records;
+using System.Text.RegularExpressions;
 
 namespace SimpleTranslator;
 
@@ -26,6 +27,8 @@ public class Program
     static Encoding UnicodeEncoding = Encoding.Unicode;
     static Encoding utf8Encoding = Encoding.UTF8;
     static Encoding win1252Encoding = null!;
+    static Regex isFullEnglishRegex = new Regex(@"^[\x00-\xff]+$", RegexOptions.Compiled);
+    static Regex isFullUpperCamelCase = new Regex(@"^([A-Z]+[a-z0-9]+)+$", RegexOptions.Compiled);
 
     public static async Task<int> Main(string[] args)
     {
@@ -45,6 +48,7 @@ public class Program
 
     public static void Patch<TCache, TTarget>(
         ImmutableLoadOrderLinkCache<ISkyrimMod, ISkyrimModGetter> cache,
+        ImmutableLoadOrderLinkCache<ISkyrimMod, ISkyrimModGetter> highPriorityCache,
         IEnumerable<TCache> sourceModEntities,
         IGroup<TTarget> patchedModsEntities,
         string keyWord,
@@ -53,27 +57,42 @@ public class Program
         where TTarget : class, IMajorRecordInternal, ITranslatedNamed, TCache
     {
         int i = 0;
+        // 遍历 FormList
         foreach (var translating in Settings.PatchAllEntity ? sourceModEntities : patchedModsEntities)
         {
-            var result = cache.TryResolve<TCache>(translating.FormKey, out var nameSource, Settings.ResolveFromOrigin ? ResolveTarget.Origin : ResolveTarget.Winner);
+            // Get the name of the entity
+            var resolveResult = highPriorityCache.TryResolve<TCache>(translating.FormKey, out var nameSource, ResolveTarget.Winner);
+            if (!resolveResult)
+            {
+                resolveResult = cache.TryResolve<TCache>(translating.FormKey, out nameSource, Settings.ResolveFromOrigin ? ResolveTarget.Origin : ResolveTarget.Winner);
+            }
             if (Settings.Verbose)
             {
                 Console.Write($"[{keyWord}] EditorId:[{translating.EditorID}], FormId:[{translating.FormKey.ID}] ");
             }
-            if (!result)
+            if (!resolveResult || nameSource == null)
             {
                 Console.WriteLine($"Resolving {translating.FormKey} from {(Settings.ResolveFromOrigin ? "Origin" : "Winner")} Failed");
-            }
-            if (nameSource?.Name?.String != null && translating.Name?.String != null && nameSource.Name.String.Equals(translating.Name.String))
-            {
-                if (Settings.Verbose)
-                {
-                    Console.WriteLine($"{nameSource.Name.String} Skipped");
-                }
                 continue;
             }
+
+            // Skip if the name no need to be translated
+            if (Settings.SkipNoTranslated && nameSource.Name?.String != null && translating.Name?.String != null
+                && nameSource.Name.String.Equals(translating.Name.String))
+            {
+                // 全是中文或者是大驼峰
+                if (!(Settings.DontSkipAllEnglish && isFullEnglishRegex.IsMatch(nameSource.Name.String))
+                    || isFullUpperCamelCase.IsMatch(nameSource.Name.String))
+                {
+                    if (Settings.Verbose)
+                    {
+                        Console.WriteLine($"{nameSource.Name.String} Skipped");
+                    }
+                    continue;
+                }
+            }
             var target = patchedModsEntities.GetOrAddAsOverride(translating);
-            if (nameSource?.Name?.String != null && target?.Name?.String != null)
+            if (nameSource.Name?.String != null && target?.Name?.String != null)
             {
                 var translatedName = Settings.CustomDictionary.ContainsKey(nameSource.Name.String)
                     ? Settings.CustomDictionary[nameSource.Name.String] : nameSource.Name.String;
@@ -107,6 +126,10 @@ public class Program
             streamWriter.AutoFlush = true;
             Console.SetOut(streamWriter);
         }
+        var highPriorityCache = state.LoadOrder.ListedOrder
+            .Where(x => Settings.HighPriorityMods.Contains(x.ModKey))
+            .OrderBy(x => Settings.HighPriorityMods.IndexOf(x.ModKey))
+            .ToImmutableLinkCache();
         var cache = state.LoadOrder.ListedOrder
             .SkipLast(1)
             .Where(x =>
@@ -122,6 +145,7 @@ public class Program
                 return Settings.WhiteListMode ? Settings.WhiteList.Contains(x.ModKey) : !Settings.BlackList.Contains(x.ModKey);
             })
             .ToImmutableLinkCache();
+
         if (Settings.Verbose)
         {
             Console.WriteLine();
@@ -138,7 +162,8 @@ public class Program
             Console.WriteLine("==================================");
             Console.WriteLine("========== Patching NPC ==========");
             Console.WriteLine("==================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.Npc().WinningOverrides(), state.PatchMod.Npcs, "NPC", (target, cache) =>
+
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Npc().WinningOverrides(), state.PatchMod.Npcs, "NPC", (target, cache) =>
             {
                 if (cache.ShortName != null)
                 {
@@ -153,7 +178,7 @@ public class Program
             Console.WriteLine("=====================================");
             Console.WriteLine("========== Patching Weapon ==========");
             Console.WriteLine("=====================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.Weapon().WinningOverrides(), state.PatchMod.Weapons, "Weapon");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Weapon().WinningOverrides(), state.PatchMod.Weapons, "Weapon");
         }
 
         if (Settings.Armor)
@@ -162,12 +187,9 @@ public class Program
             Console.WriteLine("====================================");
             Console.WriteLine("========== Patching Armor ==========");
             Console.WriteLine("====================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.Armor().WinningOverrides(), state.PatchMod.Armors, "Armor", (target, cache) =>
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Armor().WinningOverrides(), state.PatchMod.Armors, "Armor", (target, cache) =>
             {
-                if (cache.Description != null)
-                {
-                    target.Description = cache.Description.String;
-                }
+                target.Description?.Set(Language.English, cache.Description?.String);
             });
         }
 
@@ -177,16 +199,20 @@ public class Program
             Console.WriteLine("===================================");
             Console.WriteLine("========== Patching Item ==========");
             Console.WriteLine("===================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.MiscItem().WinningOverrides(), state.PatchMod.MiscItems, "Item");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.MiscItem().WinningOverrides(), state.PatchMod.MiscItems, "Item");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.SoulGem().WinningOverrides(), state.PatchMod.SoulGems, "SoulGems");
         }
 
         if (Settings.WorldSpace)
         {
             Console.WriteLine();
-            Console.WriteLine("=========================================");
-            Console.WriteLine("========== Patching WorldSpace ==========");
-            Console.WriteLine("=========================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.Worldspace().WinningOverrides(), state.PatchMod.Worldspaces, "WorldSpace");
+            Console.WriteLine("==============================================");
+            Console.WriteLine("========== Patching WorldSpace/Cell ==========");
+            Console.WriteLine("==============================================");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Worldspace().WinningOverrides(), state.PatchMod.Worldspaces, "WorldSpace");
+            IEnumerable<ICellGetter> cellGetters = state.LoadOrder.PriorityOrder.Cell().WinningOverrides();
+            var cellSubBlocks = state.PatchMod.Cells.SelectMany(x => x.SubBlocks);
+            var cells = cellSubBlocks.SelectMany(x => x.Cells);
         }
 
         if (Settings.Perk)
@@ -195,7 +221,23 @@ public class Program
             Console.WriteLine("===================================");
             Console.WriteLine("========== Patching Perk ==========");
             Console.WriteLine("===================================");
-            Patch(cache, state.LoadOrder.PriorityOrder.Perk().WinningOverrides(), state.PatchMod.Perks, "Perk");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Perk().WinningOverrides(), state.PatchMod.Perks, "Perk", (target, cache) =>
+            {
+                target.Description.Set(cache.Description.TargetLanguage, cache.Description.String);
+            });
+            var test = state.PatchMod.TryGetTopLevelGroup<Cell>();
+        }
+
+        if (Settings.Books)
+        {
+            Console.WriteLine();
+            Console.WriteLine("====================================");
+            Console.WriteLine("========== Patching Books ==========");
+            Console.WriteLine("====================================");
+            Patch(cache, highPriorityCache, state.LoadOrder.PriorityOrder.Book().WinningOverrides(), state.PatchMod.Books, "Books", (target, cache) =>
+            {
+                target.BookText.Set(cache.BookText.TargetLanguage, cache.BookText.String);
+            });
         }
     }
 }
