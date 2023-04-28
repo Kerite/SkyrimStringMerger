@@ -1,13 +1,8 @@
 using Mutagen.Bethesda.Fallout4;
 using Mutagen.Bethesda.Plugins;
 using Mutagen.Bethesda.Synthesis.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SimpleTranslator;
+namespace SynStringMerger;
 
 public record Settings
 {
@@ -21,7 +16,7 @@ public record Settings
     public bool ResolveFromOrigin = true;
 
     [SynthesisTooltip(@"If true, entities that not changed will not included by this patch")]
-    public bool SkipNoTranslated = true;
+    public bool SkipSameString = true;
 
     [SynthesisTooltip(@"Don't Skip Names That All Characters Are English ")]
     public bool DontSkipAllEnglish = false;

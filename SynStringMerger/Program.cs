@@ -2,18 +2,15 @@ using Mutagen.Bethesda;
 using Mutagen.Bethesda.Synthesis;
 using Mutagen.Bethesda.Skyrim;
 using Mutagen.Bethesda.Strings;
-using Mutagen.Bethesda.Plugins;
 using Noggog;
-using System.Collections.Immutable;
 using System.Text;
 using Mutagen.Bethesda.Plugins.Cache;
 using Mutagen.Bethesda.Plugins.Aspects;
-using Mutagen.Bethesda.Plugins.Binary.Translations;
 using Mutagen.Bethesda.Plugins.Cache.Internals.Implementations;
 using Mutagen.Bethesda.Plugins.Records;
 using System.Text.RegularExpressions;
 
-namespace SimpleTranslator;
+namespace SynStringMerger;
 
 public class Program
 {
@@ -77,7 +74,7 @@ public class Program
             }
 
             // Skip if the name no need to be translated
-            if (Settings.SkipNoTranslated && nameSource.Name?.String != null && translating.Name?.String != null
+            if (Settings.SkipSameString && nameSource.Name?.String != null && translating.Name?.String != null
                 && nameSource.Name.String.Equals(translating.Name.String))
             {
                 // 全是中文或者是大驼峰
