@@ -24,13 +24,13 @@ public record Settings
     [SynthesisTooltip(@"If true, entities that not changed will not included by this patch")]
     public bool SkipSameString = true;
 
-    [SynthesisTooltip(@"Skip Names That All Characters Are English ")]
-    public bool SkipEnglishString = true;
+    [SynthesisTooltip(@"When String is same, Don't skip if string is full english")]
+    public bool DontSkipFullEnglish = true;
 
     public string LogPath = "";
 
     [SynthesisTooltip(@"If true, all entities will be translated. If false, only entities patched by synthesis will be translated")]
-    public bool PatchAllRecords = false;
+    public bool PatchAllRecords = true;
 
     public bool WhiteListMode = false;
     [SynthesisTooltip(@"Referenced mod that translated name comes from (Only available while whitelist mode)")]
@@ -39,9 +39,7 @@ public record Settings
     public List<ModKey> BlackList = new();
 
     public bool IgnorePatchMods = true;
-    public List<ModKey> IncludedPatchMods = new()
-    {
-    };
+    public List<ModKey> IncludedPatchMods = new();
 
     public bool Weapon = true;
     public bool Armor = true;

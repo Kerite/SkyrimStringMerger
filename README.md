@@ -35,18 +35,19 @@ If ticked, the string would be resolved from origin mod (Left in xEdit, low prio
 
 **NOTICE** : This option has no effect for high priority mods
 
-### Skip Same String
-
-If ticked, strings that are same as winning strings would be skipped.
-
 ### Patch All Records
 
 If ticked, all strings would be merger, otherwise only records patched by previous
 Synthesis patchers would be patched
 
-### Skip English String
+### Skip Same String
 
-Skip Strings That are full English (All characters between `\x00` and `\xff`)
+If ticked, strings that are same as winning strings would be skipped.
+
+### Dont Skip Full English
+
+Don't Skip Strings That are full English (All characters between `\x00` and `\xff`), This works only 
+when **Skip Same String** is ticked.
 
 ### Ignore Patch Mods
 
